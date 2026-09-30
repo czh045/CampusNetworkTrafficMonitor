@@ -3,6 +3,29 @@
 A Flask and MySQL application for authenticated campus-network monitoring,
 traffic analysis, short-term forecasting, and alert management.
 
+## Portfolio Snapshot
+
+- **Problem:** help operators observe device-level traffic, investigate trends,
+  and manage threshold-based incidents from one web application.
+- **Core stack:** Flask, MySQL, ECharts, PySNMP, and scikit-learn.
+- **Security upgrades:** environment-based configuration, role checks on every
+  protected API, administrator-only device/user operations, and no committed
+  credentials.
+- **Verification:** 3 lightweight access-control tests pass without requiring a
+  running MySQL instance.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Browser dashboard] --> Flask[Flask application]
+    Flask --> MySQL[(MySQL)]
+    SNMP[Authorized SNMP collector] --> MySQL
+    Flask --> Forecast[Traffic predictor]
+    AlertWorker[Optional alert worker] --> MySQL
+    AlertWorker -. critical notifications .-> DingTalk[DingTalk]
+```
+
 ## Features
 
 - Role-based authentication: public registration creates normal users only;
@@ -34,22 +57,22 @@ traffic analysis, short-term forecasting, and alert management.
 
    Or create a MySQL database manually and run
    `database/schema.sql`.
-3. Install dependencies outside the system drive if disk space is tight:
+3. Install dependencies:
 
    ```powershell
-   D:\Anaconda\python.exe -m pip install -r requirements.txt
+   python -m pip install -r requirements.txt
    ```
 
 4. Create the first administrator:
 
    ```powershell
-   D:\Anaconda\python.exe scripts\bootstrap_admin.py
+   python scripts\bootstrap_admin.py
    ```
 
 5. Start the web application:
 
    ```powershell
-   D:\Anaconda\python.exe app.py
+   python app.py
    ```
 
    Then open `http://127.0.0.1:5000`.
@@ -63,11 +86,24 @@ authorized to monitor.
 `utils/traffic_collector.py` creates demo data for interface demonstrations.
 It is not a replacement for production telemetry.
 
+## Engineering Decisions
+
+- Credentials, webhook tokens, and Flask keys are read from `.env`, never from
+  committed source files.
+- Registration always creates a normal user; the first administrator is created
+  through a separate bootstrap script.
+- The protocol chart aggregates stored TCP connection and UDP flow counts. It
+  does not use fabricated random percentages.
+- The prediction service loads lazily and reports whether a persisted model or
+  a deterministic fallback is being used.
+- Alert creation deduplicates active alerts within a time window so one noisy
+  device does not create an unlimited stream of identical incidents.
+
 ## Verification
 
 ```powershell
-D:\Anaconda\python.exe -m pytest tests
-D:\Anaconda\python.exe -m py_compile app.py predictor.py real_collector.py config.py
+python -m pytest tests
+python -m py_compile app.py predictor.py real_collector.py config.py
 ```
 
 ## Repository Hygiene
