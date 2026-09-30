@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}校园网流量监控平台{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f5f7fb; }
+        .navbar {
+            background: linear-gradient(135deg, #2b3a67 0%, #1f2c4f 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar .logo h2 { color: white; }
+        .navbar .logo a { color: white; text-decoration: none; }
+        .nav-menu { display: flex; gap: 25px; align-items: center; }
+        .nav-menu a { color: rgba(255,255,255,0.9); text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-menu a:hover { background: rgba(255,255,255,0.2); color: white; }
+        .nav-menu a.active { background: rgba(255,255,255,0.25); color: white; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { background: #ef4444; padding: 6px 15px; border-radius: 8px; color: white; text-decoration: none; }
+        .logout-btn:hover { background: #dc2626; }
+        .main-content { padding: 20px; min-height: calc(100vh - 70px); }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e9edf2; }
+        .card-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color: #1e293b; }
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: #2b3a67; color: white; }
+        .btn-primary:hover { background: #1f2c4f; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .status-online { color: #10b981; }
+        .status-offline { color: #ef4444; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+        .badge-critical { background: #fee2e2; color: #dc2626; }
+        .badge-warning { background: #fef3c7; color: #f59e0b; }
+        .badge-info { background: #e6f0ff; color: #3b82f6; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; background: #f8fafc; border-bottom: 2px solid #e9edf2; }
+        td { padding: 12px; border-bottom: 1px solid #e9edf2; }
+        .loading { text-align: center; padding: 40px; color: #94a3b8; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dashboard"><h2>📡 校园网流量监控平台</h2></a>
+        </div>
+        <div class="nav-menu">
+            <!-- <!-- <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">实时监控</a>
+            <a href="/traffic/analysis" class="{% if request.path == '/traffic/analysis' %}active{% endif %}">流量分析</a>
+            <a href="/alerts" class="{% if request.path == '/alerts' %}active{% endif %}">告警中心</a>
+            <a href="/devices" class="{% if request.path == '/devices' %}active{% endif %}">设备管理</a>
+            {% if session.role_id == 1 %}
+            <a href="/admin/users" class="{% if request.path == '/admin/users' %}active{% endif %}">用户管理</a>
+            <a href="/system/logs" class="{% if request.path == '/system/logs' %}active{% endif %}">系统日志</a> -->
+            {% endif %} -->
+        </div>
+        <div class="user-info">
+            <span> {{ session.username }}</span>
+            <a href="/logout" class="logout-btn">退出</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

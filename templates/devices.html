@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}设备管理{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title" style="display: flex; justify-content: space-between;">
+        <span> 设备管理</span>
+        <button class="btn btn-primary" onclick="showAddModal()">+ 添加设备</button>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8fafc; border-bottom: 2px solid #e9edf2;">
+                <th style="padding: 12px; text-align: left;">ID</th>
+                <th style="padding: 12px; text-align: left;">设备名称</th>
+                <th style="padding: 12px; text-align: left;">IP地址</th>
+                <th style="padding: 12px; text-align: left;">类型</th>
+                <th style="padding: 12px; text-align: left;">状态</th>
+                <th style="padding: 12px; text-align: left;">平均流量</th>
+                <th style="padding: 12px; text-align: left;">操作</th>
+            </tr>
+        </thead>
+        <tbody id="deviceList">
+            <tr><td colspan="7" style="text-align: center; padding: 40px;">加载中...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;">
+    <div style="background:white; border-radius:16px; padding:25px; width:400px;">
+        <h3>添加设备</h3>
+        <div style="margin-bottom: 15px;">
+            <label>设备名称</label>
+            <input type="text" id="deviceName" placeholder="设备名称" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>IP地址</label>
+            <input type="text" id="deviceIp" placeholder="IP地址" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>设备类型</label>
+            <input type="text" id="deviceType" placeholder="设备类型" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+        </div>
+        <div style="margin-top:15px; text-align:right;">
+            <button class="btn btn-primary" onclick="addDevice()">确定</button>
+            <button class="btn" onclick="$('#addModal').hide()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadDevices() {
+    $.get('/api/devices/list', function(devices) {
+        console.log('设备列表:', devices);
+
+        if (!devices || devices.length === 0) {
+            $('#deviceList').html('<tr><td colspan="7" style="text-align:center; padding:40px;">暂无设备数据</td></tr>');
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < devices.length; i++) {
+            var d = devices[i];
+            var statusText = d.status == 1 ? '在线' : '离线';
+            var statusClass = d.status == 1 ? 'status-online' : 'status-offline';
+            var avgRate = d.avg_in_rate ? parseFloat(d.avg_in_rate) : 0;
+            var avgText = avgRate > 0 ? avgRate.toFixed(2) + ' Mbps' : '-';
+
+            html += '<tr style="border-bottom: 1px solid #e9edf2;">';
+            html += '<td style="padding: 12px;">' + d.id + '</td>';
+            html += '<td style="padding: 12px;"><strong>' + escapeHtml(d.device_name) + '</strong></td>';
+            html += '<td style="padding: 12px;">' + escapeHtml(d.ip_address) + '</td>';
+            html += '<td style="padding: 12px;">' + escapeHtml(d.device_type || '-') + '</td>';
+            html += '<td style="padding: 12px;"><span class="' + statusClass + '">' + statusText + '</span></td>';
+            html += '<td style="padding: 12px;">' + avgText + '</td>';
+            html += '<td style="padding: 12px;">';
+            html += '<button onclick="editDevice(' + d.id + ')" style="margin-right:5px; padding:4px 12px; background:#2b3a67; color:white; border:none; border-radius:4px; cursor:pointer;">编辑</button>';
+            html += '<button onclick="deleteDevice(' + d.id + ')" style="padding:4px 12px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">删除</button>';
+            html += '</td>';
+            html += '</tr>';
+        }
+        $('#deviceList').html(html);
+    }).fail(function() {
+        $('#deviceList').html('<tr><td colspan="7" style="text-align:center; padding:40px;">加载失败</td></tr>');
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function showAddModal() {
+    $('#deviceName').val('');
+    $('#deviceIp').val('');
+    $('#deviceType').val('');
+    $('#addModal').show();
+}
+
+function addDevice() {
+    var data = {
+        device_name: $('#deviceName').val(),
+        ip_address: $('#deviceIp').val(),
+        device_type: $('#deviceType').val()
+    };
+
+    if (!data.device_name || !data.ip_address) {
+        alert('请填写设备名称和IP地址');
+        return;
+    }
+
+    $.ajax({
+        url: '/api/devices/add',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(res) {
+            if (res.success) {
+                $('#addModal').hide();
+                loadDevices();
+            } else {
+                alert('添加失败: ' + res.error);
+            }
+        },
+        error: function() {
+            alert('请求失败');
+        }
+    });
+}
+
+function editDevice(id) {
+    var newName = prompt('请输入新的设备名称');
+    if (newName) {
+        var data = { device_name: newName, ip_address: '192.168.1.1', device_type: '交换机', status: 1 };
+        $.ajax({
+            url: '/api/devices/update/' + id,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(res) {
+                if (res.success) {
+                    loadDevices();
+                } else {
+                    alert('更新失败: ' + res.error);
+                }
+            }
+        });
+    }
+}
+
+function deleteDevice(id) {
+    if (confirm('确定删除该设备吗？')) {
+        $.post('/api/devices/delete/' + id, function(res) {
+            if (res.success) {
+                loadDevices();
+            } else {
+                alert('删除失败: ' + res.error);
+            }
+        });
+    }
+}
+
+$(document).ready(function() {
+    loadDevices();
+});
+</script>
+{% endblock %}

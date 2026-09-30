@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}告警中心{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title"> 告警中心</div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+        <div>
+            <div style="color: #666;">总告警</div>
+            <div style="font-size: 1.8rem; font-weight: bold;" id="totalAlerts">0</div>
+        </div>
+        <div>
+            <div style="color: #ef4444;">未处理</div>
+            <div style="font-size: 1.8rem; font-weight: bold; color: #ef4444;" id="activeAlerts">0</div>
+        </div>
+        <div>
+            <div style="color: #f59e0b;">严重</div>
+            <div style="font-size: 1.8rem; font-weight: bold; color: #f59e0b;" id="criticalAlerts">0</div>
+        </div>
+        <div>
+            <div style="color: #10b981;">已解决</div>
+            <div style="font-size: 1.8rem; font-weight: bold; color: #10b981;" id="resolvedAlerts">0</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <select id="filterSeverity" style="padding: 8px; border-radius: 8px; margin-right: 10px;">
+            <option value="all">全部级别</option>
+            <option value="critical">严重</option>
+            <option value="warning">警告</option>
+            <option value="info">信息</option>
+        </select>
+        <select id="filterStatus" style="padding: 8px; border-radius: 8px;">
+            <option value="all">全部状态</option>
+            <option value="active">未处理</option>
+            <option value="acknowledged">处理中</option>
+            <option value="resolved">已解决</option>
+        </select>
+        <button class="btn btn-primary" onclick="loadAlerts()">应用筛选</button>
+    </div>
+
+    <div id="alertList" style="margin-top: 20px;">
+        <div class="loading">加载中...</div>
+    </div>
+</div>
+
+<script>
+function loadAlerts() {
+    let severity = $('#filterSeverity').val();
+    let status = $('#filterStatus').val();
+
+    $.get(`/api/alerts/list?severity=${severity}&status=${status}`, function(alerts) {
+        if (alerts.length === 0) {
+            $('#alertList').html('<div class="loading">暂无告警</div>');
+            return;
+        }
+
+        let html = '';
+        for (let alert of alerts) {
+            let severityClass = alert.severity == 'critical' ? 'badge-critical' : (alert.severity == 'warning' ? 'badge-warning' : 'badge-info');
+            let severityText = alert.severity == 'critical' ? '严重' : (alert.severity == 'warning' ? '警告' : '信息');
+
+            html += `
+            <div style="border-left: 4px solid ${alert.severity == 'critical' ? '#ef4444' : (alert.severity == 'warning' ? '#f59e0b' : '#3b82f6')}; background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div>
+                        <span class="badge ${severityClass}">${severityText}</span>
+                        <strong style="margin-left: 10px;">${alert.title || alert.message}</strong>
+                    </div>
+                    <span style="color: #94a3b8;">${alert.created_at}</span>
+                </div>
+                <div style="color: #666; margin-bottom: 10px;">
+                    设备: ${alert.device_name || '系统'} | 当前值: ${alert.current_value || '-'} | 阈值: ${alert.threshold_value || '-'}
+                </div>
+                ${alert.status == 'active' ? `
+                <div>
+                    <button class="btn btn-primary" onclick="ackAlert(${alert.id})">确认</button>
+                    <button class="btn btn-warning" onclick="resolveAlert(${alert.id})">解决</button>
+                </div>
+                ` : alert.status == 'acknowledged' ? `
+                <div>
+                    <button class="btn btn-warning" onclick="resolveAlert(${alert.id})">解决</button>
+                    <span style="color: #f59e0b; margin-left: 12px;">状态: 处理中</span>
+                </div>
+                ` : `<span style="color: #10b981;">状态: 已解决</span>`}
+            </div>
+            `;
+        }
+        $('#alertList').html(html);
+    });
+}
+
+function ackAlert(id) {
+    $.post(`/api/alerts/ack/${id}`, function() {
+        loadAlerts();
+        loadStats();
+    });
+}
+
+function resolveAlert(id) {
+    $.post(`/api/alerts/resolve/${id}`, function() {
+        loadAlerts();
+        loadStats();
+    });
+}
+
+function loadStats() {
+    $.get('/api/alerts/statistics', function(data) {
+        $('#totalAlerts').text(data.total);
+        $('#activeAlerts').text(data.active);
+        $('#criticalAlerts').text(data.critical);
+        $('#resolvedAlerts').text(data.resolved);
+    });
+}
+
+loadAlerts();
+loadStats();
+setInterval(loadAlerts, 30000);
+</script>
+{% endblock %}

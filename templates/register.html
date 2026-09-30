@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 网络流量监控平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #edf0f5;
+        }
+
+        .register-box h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            text-align: center;
+        }
+
+        .register-box h2 {
+            font-size: 0.95rem;
+            color: #64748b;
+            font-weight: 400;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2b3a67;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(43, 58, 103, 0.08);
+        }
+
+        .radio-group {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e9edf2;
+        }
+
+        .radio-group label {
+            display: inline-block;
+            margin: 0 1.5rem 0 0.25rem;
+            font-weight: 400;
+            color: #475569;
+        }
+
+        .radio-group input[type="radio"] {
+            accent-color: #2b3a67;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 0.875rem;
+            background: #d6119b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 1rem 0 0.75rem;
+        }
+
+        .btn-register:hover {
+            background: #c914a1;
+        }
+
+        .btn-back {
+            display: block;
+            width: 100%;
+            padding: 0.875rem;
+            background: white;
+            color: #2b3a67;
+            border: 1px solid #d0d9e8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #f5f7fb;
+            border-color: #2b3a67;
+            text-decoration: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h1>网络流量监控平台</h1>
+        <h2>创建新账号</h2>
+
+        <form method="post" action="/get/register">
+            <div class="form-group">
+                <label>选择角色</label>
+                <div class="radio-group">
+                    <input type="radio" name="pr" value="1" id="admin" checked>
+                    <label for="admin">管理员</label>
+
+                    <input type="radio" name="pr" value="2" id="user">
+                    <label for="user">普通用户</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" class="form-control" name="u" placeholder="请输入用户名" required>
+            </div>
+
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" class="form-control" name="p" placeholder="请输入密码" required>
+            </div>
+
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" class="form-control" name="e" placeholder="your@email.com" required>
+            </div>
+
+            <button type="submit" class="btn-register">注册</button>
+            <a href="/show/infer" class="btn-back">返回登录</a>
+        </form>
+    </div>
+</body>
+</html>

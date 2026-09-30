@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">👥 用户管理</div>
+
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+             <tr style="background:#f8fafc;">
+                 <th style="padding:12px;">ID</th>
+                 <th style="padding:12px;">用户名</th>
+                 <th style="padding:12px;">真实姓名</th>
+                 <th style="padding:12px;">邮箱</th>
+                 <th style="padding:12px;">角色</th>
+                 <th style="padding:12px;">状态</th>
+                 <th style="padding:12px;">上次登录</th>
+                 <th style="padding:12px;">操作</th>
+              </tr>
+        </thead>
+        <tbody id="userList">
+             <tr><td colspan="8" style="text-align:center; padding:40px;">加载中...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+function loadUsers() {
+    $.get('/api/admin/users/list', function(users) {
+        if (!users || users.length === 0) {
+            $('#userList').html('<tr><td colspan="8" style="text-align:center;">暂无用户数据</td></tr>');
+            return;
+        }
+
+        let html = '';
+        for (let u of users) {
+            html += '<tr>';
+            html += '<td style="padding:12px;">' + u.id + '</td>';
+            html += '<td style="padding:12px;"><strong>' + u.username + '</strong></td>';
+            html += '<td style="padding:12px;">' + (u.real_name || '-') + '</td>';
+            html += '<td style="padding:12px;">' + (u.email || '-') + '</td>';
+            html += '<td style="padding:12px;">' + (u.role_id == 1 ? '管理员' : '普通用户') + '</td>';
+            html += '<td style="padding:12px;"><span style="color:' + (u.is_active == 1 ? '#10b981' : '#ef4444') + '">' + (u.is_active == 1 ? '启用' : '禁用') + '</span></td>';
+            html += '<td style="padding:12px;">' + (u.last_login || '-') + '</td>';
+            html += '<td style="padding:12px;">';
+            html += '<button onclick="editUser(' + u.id + ')" style="margin-right:5px; padding:4px 8px; background:#2b3a67; color:white; border:none; border-radius:4px;">编辑</button>';
+            html += '<button onclick="deleteUser(' + u.id + ')" style="padding:4px 8px; background:#ef4444; color:white; border:none; border-radius:4px;">删除</button>';
+            html += '</td>';
+            html += '</tr>';
+        }
+        $('#userList').html(html);
+    }).fail(function() {
+        $('#userList').html('<tr><td colspan="8" style="text-align:center;">加载失败</td></tr>');
+    });
+}
+
+function editUser(id) {
+    window.location.href = '/ad/users/change?uid=' + id;
+}
+
+function deleteUser(id) {
+    if (confirm('确定删除该用户吗？')) {
+        $.post('/api/admin/users/delete/' + id, function(res) {
+            if (res.success) {
+                loadUsers();
+            } else {
+                alert('删除失败: ' + res.error);
+            }
+        });
+    }
+}
+
+$(document).ready(function() {
+    loadUsers();
+});
+</script>
+{% endblock %}

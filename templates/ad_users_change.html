@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}编辑用户{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title"> 编辑用户</div>
+
+    {% if data %}
+    <div style="max-width: 500px;">
+        <input type="hidden" id="userId" value="{{data.id}}">
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">用户名</label>
+            <input type="text" value="{{data.username}}" readonly style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #f5f5f5;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">新密码（留空则不修改）</label>
+            <input type="password" id="password" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">真实姓名</label>
+            <input type="text" id="realName" value="{{data.real_name or ''}}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">邮箱</label>
+            <input type="email" id="email" value="{{data.email}}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">角色</label>
+            <select id="roleId" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <option value="1" {% if data.role_id == 1 %}selected{% endif %}>管理员</option>
+                <option value="2" {% if data.role_id == 2 %}selected{% endif %}>普通用户</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px;">状态</label>
+            <select id="isActive" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <option value="1" {% if data.is_active == 1 %}selected{% endif %}>启用</option>
+                <option value="0" {% if data.is_active == 0 %}selected{% endif %}>禁用</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="saveUser()" style="padding: 8px 20px; background: #2b3a67; color: white; border: none; border-radius: 6px;">保存</button>
+            <a href="/admin/users" style="padding: 8px 20px; background: #ccc; color: #333; text-decoration: none; border-radius: 6px;">返回</a>
+        </div>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px;">
+        <p>用户不存在</p>
+        <a href="/admin/users">返回用户列表</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function saveUser() {
+    let data = {
+        id: $('#userId').val(),
+        password: $('#password').val(),
+        real_name: $('#realName').val(),
+        email: $('#email').val(),
+        role_id: $('#roleId').val(),
+        is_active: $('#isActive').val()
+    };
+
+    $.ajax({
+        url: '/api/admin/users/update',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(res) {
+            if (res.success) {
+                alert('保存成功！');
+                window.location.href = '/admin/users';
+            } else {
+                alert('保存失败: ' + res.error);
+            }
+        },
+        error: function() {
+            alert('请求失败');
+        }
+    });
+}
+</script>
+{% endblock %}

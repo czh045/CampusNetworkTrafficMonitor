@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}系统日志{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title"> 系统操作日志</div>
+
+    <div style="margin-bottom: 15px;">
+        <span>共 <span id="totalCount">0</span> 条记录</span>
+        <span style="margin-left: 15px;">当前第 <span id="currentPage">1</span> 页</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>时间</th><th>用户</th><th>操作类型</th><th>描述</th><th>IP地址</th></tr>
+        </thead>
+        <tbody id="logList">
+            <tr><td colspan="5" class="loading">加载中...</td></tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+        <button class="btn" id="prevBtn" onclick="loadLogs(page-1)">上一页</button>
+        <button class="btn" id="nextBtn" onclick="loadLogs(page+1)">下一页</button>
+    </div>
+</div>
+
+<script>
+let page = 1;
+
+function loadLogs(newPage) {
+    page = newPage;
+    $.get(`/api/logs/list?page=${page}`, function(data) {
+        $('#totalCount').text(data.total);
+        $('#currentPage').text(data.page);
+        $('#prevBtn').prop('disabled', data.page <= 1);
+        $('#nextBtn').prop('disabled', data.page >= Math.ceil(data.total / data.per_page));
+
+        let html = '';
+        for (let log of data.logs) {
+            let levelClass = log.log_level == 'ERROR' ? 'badge-critical' : (log.log_level == 'WARNING' ? 'badge-warning' : 'badge-info');
+            html += `
+            <tr>
+                <td>${log.created_at}</td>
+                <td>${log.username || '系统'}</td>
+                <td><span class="badge ${levelClass}">${log.action_type || log.log_level}</span></td>
+                <td>${log.message || log.description}</td>
+                <td>${log.ip_address || '-'}</td>
+            </tr>`;
+        }
+        $('#logList').html(html);
+    });
+}
+
+loadLogs(1);
+</script>
+{% endblock %}

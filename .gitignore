@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local configuration and IDE metadata
+.env
+.idea/
+VUE/
+
+# Trained models and local capture fixtures
+models/*.pkl
+snmp_data/*.snmprec
+
+# Runtime artifacts
+*.log
+coverage.xml
+htmlcov/
+
+# Browser source maps are useful only when debugging third-party Bootstrap.
+static/plugins/bootstrap-3.4.1/**/*.map
+
+# OS files
+.DS_Store
+Thumbs.db
